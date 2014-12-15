@@ -1,10 +1,14 @@
+#![feature(globs)]
 extern crate getopts;
 extern crate augeas;
 //use getopts::{optflag, usage};
 use std::os;
+use error::error;
 
+mod error;
 mod tool {
     pub mod rcon;
+    pub mod start;
 }
 
 pub trait ServerTool {
@@ -14,8 +18,9 @@ pub trait ServerTool {
 }
 
 fn main() {
-    let tools = &[
-        tool::rcon::RconTool
+    let tools: &[&ServerTool] = &[
+        &tool::rcon::RconTool,
+        &tool::start::StartTool
     ];
 
     let mut args = os::args();
@@ -35,7 +40,7 @@ fn main() {
     }
 }
 
-fn show_help<T: ServerTool>(tools: &[T]) {
+fn show_help(tools: &[&ServerTool]) {
     println!("Available tools:");
     for tool in tools.iter() {
         println!("\t{}\t{}", tool.name(), tool.desc());
