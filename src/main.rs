@@ -1,6 +1,7 @@
 #![feature(globs)]
 extern crate getopts;
 extern crate augeas;
+extern crate libc;
 //use getopts::{optflag, usage};
 use std::os;
 use error::error;
