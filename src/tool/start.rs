@@ -19,7 +19,7 @@ impl ServerTool for StartTool {
 
 pub fn main(server_root: &str, args: Vec<String>) {
     let _ = args;
-    let server_path = Path::new(server_root);
+    let server_path = &Path::new(server_root);
     let socket_path = &server_path.join("mct.sock");
 
     if let Err(e) = detect_running_server(socket_path) {
@@ -27,16 +27,20 @@ pub fn main(server_root: &str, args: Vec<String>) {
         return
     }
 
-    let socket = UnixListener::bind(socket_path);
+    let mut acceptor = UnixListener::bind(socket_path).listen();
 
-    for mut stream in socket.listen().incoming() {
+    if let Err(e) = acceptor {
+        println!("mct: {}", e);
+        return
+    }
+
+    for mut stream in acceptor.incoming() {
+        println!("mct: incoming connection")
         match stream {
             Err(err) => {
                 println!("mct: {}", err);
-                return
             }
-            Ok(stream) => spawn(proc() {
-                println!("mct: new connection")
+            Ok(stream) => spawn(move || {
                 handle_client(stream)
             })
         }
