@@ -7,6 +7,7 @@ use std::io::net::pipe::{UnixListener, UnixStream};
 use std::io::{Listener,Acceptor,BufferedStream};
 use std::io::FileType::NamedPipe;
 use std::io::fs::{stat,unlink,PathExtensions};
+use std::io::process::{Command,Process};
 use error::{error,wrap_error,Result};
 
 pub struct StartTool;
@@ -30,6 +31,11 @@ pub fn main(server_root: &str, args: Vec<String>) {
     let mut acceptor = UnixListener::bind(socket_path).listen();
 
     if let Err(e) = acceptor {
+        println!("mct: {}", e);
+        return
+    }
+
+    if let Err(e) = spawn_server(server_path) {
         println!("mct: {}", e);
         return
     }
@@ -64,10 +70,23 @@ fn detect_running_server(socket_path: &Path) -> Result<()> {
     let maybe_info = stat(socket_path);
 
     // try to connect to a possibly running server
-    if socket_path.exists() && UnixStream::connect(socket_path).is_ok() {
-        Err(error("server already running"))
+    if socket_path.exists() {
+        if UnixStream::connect(socket_path).is_ok() {
+            Err(error("server already running"))
+        } else {
+            try!(unlink(socket_path));
+            Ok(())
+        }
     } else {
-        try!(unlink(socket_path));
         Ok(())
     }
+}
+
+fn spawn_server(server_path: &Path) -> Result<Process> {
+    let start_script = &server_path.join("StartServer.sh");
+
+    Command::new(start_script)
+        .cwd(server_path)
+        .spawn()
+        .map_err(|e| error(format!("{} {}", e, start_script.display().to_string()).as_slice()))
 }
