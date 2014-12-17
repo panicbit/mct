@@ -5,10 +5,16 @@
 use ServerTool;
 use std::io::net::pipe::{UnixListener, UnixStream};
 use std::io::{Listener,Acceptor,BufferedStream};
+use std::io::net::pipe::UnixAcceptor;
 use std::io::FileType::NamedPipe;
-use std::io::fs::{stat,unlink,PathExtensions};
+use std::io::fs::{unlink,PathExtensions};
 use std::io::process::{Command,Process};
-use error::{error,wrap_error,Result};
+use std::io::pipe::PipeStream;
+use std::collections::HashMap;
+use std::slice::SliceExt;
+use std::mem::drop;
+use error::{error,Result};
+use broadcast::BroadcastStation;
 
 pub struct StartTool;
 
@@ -28,36 +34,63 @@ pub fn main(server_root: &str, args: Vec<String>) {
         return
     }
 
-    let mut acceptor = UnixListener::bind(socket_path).listen();
+    let mut acceptor = match UnixListener::bind(socket_path).listen() {
+        Ok(acceptor) => acceptor,
+        Err(e) => {
+            println!("mct: {}", e);
+            return
+        }
+    };
 
-    if let Err(e) = acceptor {
-        println!("mct: {}", e);
-        return
+    let mut server = match spawn_server(server_path) {
+        Ok(server) => server,
+        Err(e) => {
+            println!("mct spawn server: {}", e);
+            return
+        }
+    };
+
+    let mut server_stdout = BufferedStream::new(server.stdout.clone().unwrap());
+    let server_stdin = BufferedStream::new(server.stdin.clone().unwrap());
+
+    let (cmd_tx, cmd_rx) = channel();
+    let mut station = BroadcastStation::<String>::new();
+
+    {
+        let station1 = station.clone();
+        let station2 = station.clone();
+        let acceptor = acceptor.clone();
+        spawn(move || server_console_broadcaster(server_stdout, station1, acceptor));
+        spawn(move || server_cmd_executor(server_stdin, cmd_rx, station2));
     }
 
-    if let Err(e) = spawn_server(server_path) {
-        println!("mct: {}", e);
-        return
-    }
+    let connected_clients = HashMap::<uint, UnixStream>::new();
 
     for mut stream in acceptor.incoming() {
-        println!("mct: incoming connection")
         match stream {
             Err(err) => {
-                println!("mct: {}", err);
+                //println!("mct: {}", err)
+                println!("mct stopping")
+                server.signal_exit();
+                break
             }
-            Ok(stream) => spawn(move || {
-                handle_client(stream)
-            })
+            Ok(stream) => {
+                let cmd_tx = cmd_tx.clone();
+                let stream1 = stream.clone();
+                let stream2 = stream.clone();
+                let mut console_rx = station.signup();
+                spawn(move || client_cmd_receiver(stream1, cmd_tx));
+                spawn(move || client_console_sender(stream2, console_rx))
+            }
         }
     }
 }
 
-fn handle_client(stream: UnixStream) {
+fn client_cmd_receiver(stream: UnixStream, cmd_tx: Sender<String>) {
     let mut stream = BufferedStream::new(stream);
     loop {
         match stream.read_line() {
-            Ok(cmd) => print!("executing: {}", cmd),
+            Ok(cmd) => cmd_tx.send(cmd),
             Err(err) => {
                 println!("mct: {}", err);
                 break
@@ -66,9 +99,50 @@ fn handle_client(stream: UnixStream) {
     }
 }
 
-fn detect_running_server(socket_path: &Path) -> Result<()> {
-    let maybe_info = stat(socket_path);
+fn client_console_sender(mut stream: UnixStream, console_rx: Receiver<String>) {
+    loop {
+        match console_rx.recv_opt() {
+            Ok(output) => stream.write_str(output.as_slice()),
+            Err(_) => break
+        };
+    }
+}
 
+fn server_cmd_executor(mut server_stdin: BufferedStream<PipeStream>, cmd_rx: Receiver<String>, mut console_station: BroadcastStation<String>) {
+    loop {
+        match cmd_rx.recv_opt() {
+            Ok(cmd) => {
+                let msg = format!("mct: executing '{}'\n", cmd.as_slice().trim_right_chars('\n'));
+                print!("{}", msg.as_slice());
+                console_station.send(msg);
+                server_stdin.write_str(cmd.as_slice());
+                server_stdin.flush();
+            },
+            Err(()) => {
+                println!("mct: stopping cmd executor");
+                break
+            } 
+        }
+    }
+}
+
+fn server_console_broadcaster(mut server_stdout: BufferedStream<PipeStream>, mut station: BroadcastStation<String>, mut acceptor: UnixAcceptor) {
+    loop {
+        match server_stdout.read_line() {
+            Ok(line) => {
+                print!("{}", line);
+                station.send(line);
+            },
+            Err(_) => {
+                acceptor.close_accept();
+                println!("mct: stopping console broadcaster")
+                break
+            }
+        }
+    }
+}
+
+fn detect_running_server(socket_path: &Path) -> Result<()> {
     // try to connect to a possibly running server
     if socket_path.exists() {
         if UnixStream::connect(socket_path).is_ok() {

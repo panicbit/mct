@@ -11,6 +11,7 @@ mod tool {
     pub mod rcon;
     pub mod start;
 }
+mod broadcast;
 
 pub trait ServerTool {
     fn name(&self) -> &'static str;
