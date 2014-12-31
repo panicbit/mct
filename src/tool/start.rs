@@ -70,7 +70,10 @@ pub fn main(server_root: &str, args: Vec<String>) {
         match stream {
             Err(err) => {
                 //println!("mct: {}", err)
-                println!("mct stopping")
+                println!("mct stopping");
+                println!("disconnecting clients");
+                drop(cmd_tx);
+                station.disconnect_all();
                 server.signal_exit();
                 break
             }
@@ -135,7 +138,7 @@ fn server_console_broadcaster(mut server_stdout: BufferedStream<PipeStream>, mut
             },
             Err(_) => {
                 acceptor.close_accept();
-                println!("mct: stopping console broadcaster")
+                println!("mct: stopping console broadcaster");
                 break
             }
         }
