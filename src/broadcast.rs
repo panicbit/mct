@@ -1,10 +1,12 @@
 use std::collections::DList;
 use std::sync::{Mutex,Arc};
 
-#[deriving(Clone,Sync)]
+#[deriving(Clone)]
 pub struct BroadcastStation<T: Send> {
     clients: Arc<Mutex<DList<Sender<T>>>>
 }
+
+unsafe impl<T: Send> Sync for BroadcastStation<T> {}
 
 impl<T: Send+Clone> BroadcastStation<T> {
     pub fn new() -> BroadcastStation<T> {
@@ -32,5 +34,10 @@ impl<T: Send+Clone> BroadcastStation<T> {
                 .map(move |_| client.clone())
                 .into_iter()
         }).collect();
+    }
+
+    pub fn disconnect_all(&mut self) {
+        let mut clients = self.clients.lock();
+        *clients = DList::new();
     }
 }
