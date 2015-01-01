@@ -17,7 +17,7 @@ impl<T: Send+Clone> BroadcastStation<T> {
     
     pub fn signup(&mut self) -> Receiver<T> {
         let (cast_tx, cast_rx) = channel();
-        let mut clients = self.clients.lock();
+        let mut clients = self.clients.lock().unwrap();
         clients.push_back(cast_tx);
         cast_rx
     }
@@ -26,7 +26,7 @@ impl<T: Send+Clone> BroadcastStation<T> {
         // This implementation is not satisfactory.
         // I'd rather avoid "client.clone()" and
         // just move the clients into the new list.
-        let mut clients = self.clients.lock();
+        let mut clients = self.clients.lock().unwrap();
         *clients = clients.iter().flat_map(|client| {
             client
                 .send_opt(msg.clone())
@@ -37,7 +37,7 @@ impl<T: Send+Clone> BroadcastStation<T> {
     }
 
     pub fn disconnect_all(&mut self) {
-        let mut clients = self.clients.lock();
+        let mut clients = self.clients.lock().unwrap();
         *clients = DList::new();
     }
 }
