@@ -2,7 +2,6 @@
 // https://github.com/rust-lang/rust/issues/11203 is resolved
 // i.e. until signals work
 
-use ServerTool;
 use std::io::net::pipe::{UnixListener, UnixStream};
 use std::io::{Listener,Acceptor,BufferedStream};
 use std::io::net::pipe::UnixAcceptor;
@@ -13,19 +12,17 @@ use std::io::pipe::PipeStream;
 use std::collections::HashMap;
 use std::slice::SliceExt;
 use std::mem::drop;
+use docopt;
 use error::{error,Result};
 use broadcast::BroadcastStation;
 
-pub struct StartTool;
-
-impl ServerTool for StartTool {
-    fn name(&self) -> &'static str {"start"}
-    fn desc(&self) -> &'static str {"start a server"}
-    fn main(&self, server_root: &str, args: Vec<String>) {main(server_root, args)}
-}
-
-pub fn main(server_root: &str, args: Vec<String>) {
-    let _ = args;
+pub fn main(args: Vec<String>) {
+    let args: Args =
+        Args::docopt()
+        .argv(args.into_iter())
+        .decode()
+        .unwrap_or_else(|e| e.exit());
+    let server_root = args.arg_server_root.as_slice();
     let server_path = &Path::new(server_root);
     let socket_path = &server_path.join("mct.sock");
 
@@ -167,3 +164,13 @@ fn spawn_server(server_path: &Path) -> Result<Process> {
         .spawn()
         .map_err(|e| error(format!("{} {}", e, start_script.display().to_string()).as_slice()))
 }
+
+docopt!(Args deriving Show, "
+Start a server
+
+Usage:
+    start <server-root> [options]
+
+Options:
+    -h, --help    Show this help
+");

@@ -4,5 +4,10 @@ name = "mct"
 version = "0.0.1"
 authors = ["panicbit <panicbit@users.noreply.github.com>"]
 
+[dependencies.docopt_macros]
+#git = "https://github.com/docopt/docopt.rs"
+git = "https://github.com/kinghajj/docopt.rs"
+branch = "entries-to-iter"
+
 [dependencies.augeas]
 git = "https://github.com/panicbit/rust-augeas.git"

@@ -3,10 +3,38 @@ name = "mct"
 version = "0.0.1"
 dependencies = [
  "augeas 0.0.1 (git+https://github.com/panicbit/rust-augeas.git)",
+ "docopt_macros 0.6.20 (git+https://github.com/kinghajj/docopt.rs?branch=entries-to-iter)",
 ]
 
 [[package]]
 name = "augeas"
 version = "0.0.1"
 source = "git+https://github.com/panicbit/rust-augeas.git#b52680c54a04df0ca9a8e78308ecc70055aae16d"
+
+[[package]]
+name = "docopt"
+version = "0.6.20"
+source = "git+https://github.com/kinghajj/docopt.rs?branch=entries-to-iter#2ea3222fd1911a51a98b37ff333838da842a786a"
+dependencies = [
+ "regex 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "docopt_macros"
+version = "0.6.20"
+source = "git+https://github.com/kinghajj/docopt.rs?branch=entries-to-iter#2ea3222fd1911a51a98b37ff333838da842a786a"
+dependencies = [
+ "docopt 0.6.20 (git+https://github.com/kinghajj/docopt.rs?branch=entries-to-iter)",
+]
+
+[[package]]
+name = "regex"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "rustc-serialize"
+version = "0.1.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 

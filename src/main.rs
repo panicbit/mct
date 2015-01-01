@@ -1,50 +1,50 @@
-#![feature(globs)]
+#![feature(globs,phase)]
 extern crate getopts;
 extern crate augeas;
 extern crate libc;
+#[phase(plugin)]
+extern crate docopt_macros;
+extern crate docopt;
+extern crate "rustc-serialize" as rustc_serialize;
 //use getopts::{optflag, usage};
 use std::os;
 use error::error;
 
 mod error;
-mod tool {
-    pub mod rcon;
-    pub mod start;
-}
+mod tool;
 mod broadcast;
 
-pub trait ServerTool {
-    fn name(&self) -> &'static str;
-    fn desc(&self) -> &'static str;
-    fn main(&self, server_root: &str, args: Vec<String>);
-}
-
 fn main() {
-    let tools: &[&ServerTool] = &[
-        &tool::rcon::RconTool,
-        &tool::start::StartTool
-    ];
+    let args: Args =
+        Args::docopt()
+        .options_first(true)
+        .decode()
+        .unwrap_or_else(|e| e.exit());
 
-    let mut args = os::args();
+    // Build sub-command commandline
+    let mut cmd_args = vec![args.arg_command.clone()];
+    cmd_args.push_all(args.arg_args.as_slice());
 
-    let maybe_root = args.remove(1);
-
-    let maybe_tool = args.remove(1).and_then(|tool_name| {
-        tools
-            .iter()
-            .skip_while(|tool| tool.name() != tool_name)
-            .next()
-    });
-
-    match (maybe_root, maybe_tool) {
-        (Some(root),Some(tool)) => tool.main(root.as_slice(), args),
-        _ => show_help(tools)
-    }
+    match args.arg_command.as_slice() {
+        "rcon" => tool::rcon::main(cmd_args),
+        "start" => tool::start::main(cmd_args),
+        _ => println!("Unknown command!")
+    };
 }
 
-fn show_help(tools: &[&ServerTool]) {
-    println!("Available tools:");
-    for tool in tools.iter() {
-        println!("\t{}\t{}", tool.name(), tool.desc());
-    }
-}
+docopt!(Args deriving Show, "
+Minecraft server configuration tool
+
+Usage:
+    mct <command> [<args>...]
+    mct -h
+
+Options:
+    -h, --help    Show this help
+
+Commands:
+    rcon          Configure rcon settings
+    start         Start the server
+
+See `mct <command> -h` for command specific help
+");

@@ -1,13 +1,5 @@
-use ServerTool;
+use docopt;
 use augeas::{Augeas,AugFlags};
-
-pub struct RconTool;
-
-impl ServerTool for RconTool {
-    fn name(&self) -> &'static str {"rcon"}
-    fn desc(&self) -> &'static str {"configure rcon related things"}
-    fn main(&self, server_root: &str, args: Vec<String>) {main(server_root, args)}
-}
 
 #[deriving(Show)]
 pub struct RconInfo {
@@ -43,16 +35,19 @@ impl RconInfo {
     }
 }
 
-pub fn main(server_root: &str, mut args: Vec<String>) {
+pub fn main(mut args: Vec<String>) {
+    let args: Args =
+        Args::docopt()
+        .argv(args.into_iter())
+        .decode()
+        .unwrap_or_else(|e| e.exit());
+    let server_root = args.arg_server_root.as_slice();
     let aug = &mut Augeas::new(server_root, "res/augeas/", AugFlags::None);
     let rcon = RconInfo::from_augeas(aug);
-    let maybe_cmd = args.remove(1);
-    let maybe_cmd_slice = maybe_cmd.as_ref().map(|s| s.as_slice());
 
-    match maybe_cmd_slice {
-        Some("show") => cmd_show(rcon),
-        _ => show_help(args)
-    };
+    if args.flag_list {
+        cmd_show(rcon);
+    }
 }
 
 fn cmd_show(rcon: RconInfo) {
@@ -65,12 +60,16 @@ r"enabled: {}
     rcon.pass)
 }
 
-fn show_help(mut args: Vec<String>) {
-    println!(
-r"Usage: {} <server_root> rcon <command>
+docopt!(Args deriving Show, "
+Configure rcon settings
 
-Available commands:
-    show    print rcon config
-",
-    args.remove(0).unwrap())
-}
+Usage:
+    rcon <server-root> [options]
+
+Options:
+    -h, --help           Show this help
+    -l, --list           List settings
+    -g, --genpass        Generate a new password
+    -p, --port=<port>    Set a new port
+    --pass=<pw>          Set a new password
+");
