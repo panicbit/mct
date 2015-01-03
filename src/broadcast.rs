@@ -36,6 +36,7 @@ impl<T: Send+Clone> BroadcastStation<T> {
         }).collect();
     }
 
+    #[allow(dead_code)]
     pub fn disconnect_all(&mut self) {
         let mut clients = self.clients.lock().unwrap();
         *clients = DList::new();

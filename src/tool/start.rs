@@ -8,7 +8,6 @@ use std::io::net::pipe::UnixAcceptor;
 use std::io::fs::{unlink,PathExtensions};
 use std::io::process::{Command,Process};
 use std::io::pipe::PipeStream;
-use std::mem::drop;
 use std::thread::Thread;
 use docopt;
 use error::{error,Result};
@@ -37,7 +36,7 @@ pub fn main(args: Vec<String>) {
         }
     };
 
-    let mut mc_server = match spawn_server(server_path) {
+    let mc_server = match spawn_server(server_path) {
         Ok(server) => server,
         Err(e) => {
             println!("mct spawn server: {}", e);
@@ -71,7 +70,7 @@ pub fn main(args: Vec<String>) {
                 let cmd_tx = cmd_tx.clone();
                 let stream1 = stream.clone();
                 let stream2 = stream.clone();
-                let mut console_rx = station.signup();
+                let console_rx = station.signup();
                 Thread::spawn(move || client_cmd_receiver(stream1, cmd_tx)).detach();
                 Thread::spawn(move || client_console_sender(stream2, console_rx)).detach();
             }
@@ -95,7 +94,7 @@ fn client_cmd_receiver(stream: UnixStream, cmd_tx: Sender<String>) {
 fn client_console_sender(mut stream: UnixStream, console_rx: Receiver<String>) {
     loop {
         match console_rx.recv_opt() {
-            Ok(output) => stream.write_str(output.as_slice()),
+            Ok(output) => {let _ = stream.write_str(output.as_slice());},
             Err(_) => break
         };
     }
@@ -105,11 +104,11 @@ fn server_cmd_executor(mut server_stdin: BufferedStream<PipeStream>, cmd_rx: Rec
     loop {
         match cmd_rx.recv_opt() {
             Ok(cmd) => {
-                let msg = format!("mct: executing '{}'\n", cmd.as_slice().trim_right_chars('\n'));
+                let msg = format!("mct: executing '{}'\n", cmd.as_slice().trim_right_matches('\n'));
                 print!("{}", msg.as_slice());
                 console_station.send(msg);
-                server_stdin.write_str(cmd.as_slice());
-                server_stdin.flush();
+                let _ = server_stdin.write_str(cmd.as_slice());
+                let _ = server_stdin.flush();
             },
             Err(()) => {
                 println!("mct: stopping cmd executor");
@@ -127,7 +126,7 @@ fn server_console_broadcaster(mut server_stdout: BufferedStream<PipeStream>, mut
                 station.send(line);
             },
             Err(_) => {
-                acceptor.close_accept();
+                let _ = acceptor.close_accept();
                 println!("mct: stopping console broadcaster");
                 break
             }
