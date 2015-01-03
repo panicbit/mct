@@ -9,6 +9,7 @@ use std::io::fs::{unlink,PathExtensions};
 use std::io::process::{Command,Process};
 use std::io::pipe::PipeStream;
 use std::mem::drop;
+use std::thread::Thread;
 use docopt;
 use error::{error,Result};
 use broadcast::BroadcastStation;
@@ -54,8 +55,8 @@ pub fn main(args: Vec<String>) {
         let station1 = station.clone();
         let station2 = station.clone();
         let acceptor = acceptor.clone();
-        spawn(move || server_console_broadcaster(server_stdout, station1, acceptor));
-        spawn(move || server_cmd_executor(server_stdin, cmd_rx, station2));
+        Thread::spawn(move || server_console_broadcaster(server_stdout, station1, acceptor)).detach();
+        Thread::spawn(move || server_cmd_executor(server_stdin, cmd_rx, station2)).detach();
     }
 
     for mut stream in acceptor.incoming() {
@@ -74,8 +75,8 @@ pub fn main(args: Vec<String>) {
                 let stream1 = stream.clone();
                 let stream2 = stream.clone();
                 let mut console_rx = station.signup();
-                spawn(move || client_cmd_receiver(stream1, cmd_tx));
-                spawn(move || client_console_sender(stream2, console_rx))
+                Thread::spawn(move || client_cmd_receiver(stream1, cmd_tx)).detach();
+                Thread::spawn(move || client_console_sender(stream2, console_rx)).detach();
             }
         }
     }
