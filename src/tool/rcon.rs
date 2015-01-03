@@ -43,11 +43,26 @@ pub fn main(mut args: Vec<String>) {
         .unwrap_or_else(|e| e.exit());
     let server_root = args.arg_server_root.as_slice();
     let aug = &mut Augeas::new(server_root, "res/augeas/", AugFlags::None);
-    let rcon = RconInfo::from_augeas(aug);
+    let mut rcon = RconInfo::from_augeas(aug);
 
     if args.flag_list {
         cmd_show(rcon);
+    } else {
+        if args.flag_port {
+            let new_port = args.arg_port.parse::<u16>();
+            rcon.port = new_port.unwrap_or_else(|| {
+                println!("invalid port");
+                rcon.port
+            });
+        }
+
+        // TODO: implement remaining flags
+
+        rcon.update_augeas(aug);
+        aug.save();
     }
+
+    println!("{}", args);
 }
 
 fn cmd_show(rcon: RconInfo) {
@@ -65,11 +80,12 @@ Configure rcon settings
 
 Usage:
     rcon <server-root> [options]
+    rcon <server-root> -p <port>
 
 Options:
     -h, --help           Show this help
     -l, --list           List settings
     -g, --genpass        Generate a new password
-    -p, --port=<port>    Set a new port
+    -p, --port           Set a new port
     --pass=<pw>          Set a new password
 ");
