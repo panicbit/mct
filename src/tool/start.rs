@@ -37,7 +37,7 @@ pub fn main(args: Vec<String>) {
         }
     };
 
-    let mut server = match spawn_server(server_path) {
+    let mut mc_server = match spawn_server(server_path) {
         Ok(server) => server,
         Err(e) => {
             println!("mct spawn server: {}", e);
@@ -45,8 +45,8 @@ pub fn main(args: Vec<String>) {
         }
     };
 
-    let server_stdout = BufferedStream::new(server.stdout.clone().unwrap());
-    let server_stdin = BufferedStream::new(server.stdin.clone().unwrap());
+    let server_stdout = BufferedStream::new(mc_server.stdout.clone().unwrap());
+    let server_stdin = BufferedStream::new(mc_server.stdin.clone().unwrap());
 
     let (cmd_tx, cmd_rx) = channel();
     let mut station = BroadcastStation::<String>::new();
@@ -65,9 +65,6 @@ pub fn main(args: Vec<String>) {
                 //println!("mct: {}", err)
                 println!("mct stopping");
                 println!("disconnecting clients");
-                drop(cmd_tx);
-                station.disconnect_all();
-                server.signal_exit();
                 break
             }
             Ok(stream) => {
