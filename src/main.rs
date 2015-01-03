@@ -6,9 +6,6 @@ extern crate libc;
 extern crate docopt_macros;
 extern crate docopt;
 extern crate "rustc-serialize" as rustc_serialize;
-//use getopts::{optflag, usage};
-use std::os;
-use error::error;
 
 mod error;
 mod tool;

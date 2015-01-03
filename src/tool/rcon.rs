@@ -12,11 +12,11 @@ impl RconInfo {
     pub fn from_augeas(aug: &Augeas) -> RconInfo {
         let rcon_enabled = aug
             .get("server.properties/enable-rcon")
-            .and_then(|enabled| from_str::<bool>(enabled.as_slice()))
+            .and_then(|enabled| enabled.parse::<bool>())
             .unwrap_or(false);
         let rcon_port = aug
             .get("server.properties/rcon.port")
-            .and_then(|port| from_str::<u16>(port.as_slice()))
+            .and_then(|port| port.parse::<u16>())
             .unwrap_or(25575);
         let rcon_pass = aug.get("server.properties/rcon.password")
             .unwrap_or("".to_string());
@@ -35,7 +35,7 @@ impl RconInfo {
     }
 }
 
-pub fn main(mut args: Vec<String>) {
+pub fn main(args: Vec<String>) {
     let args: Args =
         Args::docopt()
         .argv(args.into_iter())

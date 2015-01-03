@@ -5,12 +5,9 @@
 use std::io::net::pipe::{UnixListener, UnixStream};
 use std::io::{Listener,Acceptor,BufferedStream};
 use std::io::net::pipe::UnixAcceptor;
-use std::io::FileType::NamedPipe;
 use std::io::fs::{unlink,PathExtensions};
 use std::io::process::{Command,Process};
 use std::io::pipe::PipeStream;
-use std::collections::HashMap;
-use std::slice::SliceExt;
 use std::mem::drop;
 use docopt;
 use error::{error,Result};
@@ -47,7 +44,7 @@ pub fn main(args: Vec<String>) {
         }
     };
 
-    let mut server_stdout = BufferedStream::new(server.stdout.clone().unwrap());
+    let server_stdout = BufferedStream::new(server.stdout.clone().unwrap());
     let server_stdin = BufferedStream::new(server.stdin.clone().unwrap());
 
     let (cmd_tx, cmd_rx) = channel();
@@ -61,11 +58,9 @@ pub fn main(args: Vec<String>) {
         spawn(move || server_cmd_executor(server_stdin, cmd_rx, station2));
     }
 
-    let connected_clients = HashMap::<uint, UnixStream>::new();
-
     for mut stream in acceptor.incoming() {
         match stream {
-            Err(err) => {
+            Err(_) => {
                 //println!("mct: {}", err)
                 println!("mct stopping");
                 println!("disconnecting clients");
