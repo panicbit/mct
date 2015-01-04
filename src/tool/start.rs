@@ -12,7 +12,7 @@ use std::io::pipe::PipeStream;
 use std::thread::Thread;
 use docopt;
 use error::{error,Result};
-use broadcast::BroadcastStation;
+use mpmc::MultiSender;
 
 pub fn main(args: Vec<String>) {
     let args: Args =
@@ -49,7 +49,7 @@ pub fn main(args: Vec<String>) {
     let server_stdin = BufferedStream::new(mc_server.stdin.clone().unwrap());
 
     let (cmd_tx, cmd_rx) = channel();
-    let mut station = BroadcastStation::<String>::new();
+    let mut station = MultiSender::<String>::new();
 
     {
         let station1 = station.clone();
@@ -71,7 +71,7 @@ pub fn main(args: Vec<String>) {
                 let cmd_tx = cmd_tx.clone();
                 let stream1 = stream.clone();
                 let stream2 = stream.clone();
-                let console_rx = station.signup();
+                let console_rx = station.receiver();
                 Thread::spawn(move || client_cmd_receiver(stream1, cmd_tx)).detach();
                 Thread::spawn(move || client_console_sender(stream2, console_rx)).detach();
             }
@@ -104,7 +104,7 @@ fn client_console_sender(mut stream: UnixStream, console_rx: Receiver<String>) {
     }
 }
 
-fn server_cmd_executor(mut server_stdin: BufferedStream<PipeStream>, cmd_rx: Receiver<String>, mut console_station: BroadcastStation<String>) {
+fn server_cmd_executor(mut server_stdin: BufferedStream<PipeStream>, cmd_rx: Receiver<String>, mut console_station: MultiSender<String>) {
     loop {
         match cmd_rx.recv() {
             Ok(cmd) => {
@@ -122,7 +122,7 @@ fn server_cmd_executor(mut server_stdin: BufferedStream<PipeStream>, cmd_rx: Rec
     }
 }
 
-fn server_console_broadcaster(mut server_stdout: BufferedStream<PipeStream>, mut station: BroadcastStation<String>, mut acceptor: UnixAcceptor) {
+fn server_console_broadcaster(mut server_stdout: BufferedStream<PipeStream>, mut station: MultiSender<String>, mut acceptor: UnixAcceptor) {
     loop {
         match server_stdout.read_line() {
             Ok(line) => {

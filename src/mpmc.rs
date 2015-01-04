@@ -2,20 +2,20 @@ use std::sync::{Mutex,Arc};
 use std::sync::mpsc::{channel,Sender,Receiver};
 
 #[derive(Clone)]
-pub struct BroadcastStation<T: Send> {
+pub struct MultiSender<T: Send> {
     clients: Arc<Mutex<Vec<Sender<T>>>>
 }
 
-unsafe impl<T: Send> Sync for BroadcastStation<T> {}
+unsafe impl<T: Send> Sync for MultiSender<T> {}
 
-impl<T: Send+Clone> BroadcastStation<T> {
-    pub fn new() -> BroadcastStation<T> {
-        BroadcastStation::<T> {
+impl<T: Send+Clone> MultiSender<T> {
+    pub fn new() -> MultiSender<T> {
+        MultiSender::<T> {
             clients: Arc::new(Mutex::new(Vec::new()))
         }
     }
     
-    pub fn signup(&mut self) -> Receiver<T> {
+    pub fn receiver(&mut self) -> Receiver<T> {
         let (cast_tx, cast_rx) = channel();
         let mut clients = self.clients.lock().unwrap();
         clients.push(cast_tx);
