@@ -1,6 +1,7 @@
 use std::sync::{Mutex,Arc};
+use std::sync::mpsc::{channel,Sender,Receiver};
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct BroadcastStation<T: Send> {
     clients: Arc<Mutex<Vec<Sender<T>>>>
 }

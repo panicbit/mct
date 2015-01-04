@@ -1,3 +1,4 @@
+#![feature(old_orphan_check)]
 #![feature(globs,phase)]
 extern crate getopts;
 extern crate augeas;
@@ -29,7 +30,7 @@ fn main() {
     };
 }
 
-docopt!(Args deriving Show, "
+docopt!(Args, "
 Minecraft server configuration tool
 
 Usage:

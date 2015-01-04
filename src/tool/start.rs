@@ -2,6 +2,7 @@
 // https://github.com/rust-lang/rust/issues/11203 is resolved
 // i.e. until signals work
 
+use std::sync::mpsc::{channel,Sender,Receiver};
 use std::io::net::pipe::{UnixListener, UnixStream};
 use std::io::{Listener,Acceptor,BufferedStream};
 use std::io::net::pipe::UnixAcceptor;
@@ -82,7 +83,10 @@ fn client_cmd_receiver(stream: UnixStream, cmd_tx: Sender<String>) {
     let mut stream = BufferedStream::new(stream);
     loop {
         match stream.read_line() {
-            Ok(cmd) => cmd_tx.send(cmd),
+            Ok(cmd) => if let Err(err) = cmd_tx.send(cmd) {
+                println!("mct: {}", err);
+                break
+            },
             Err(err) => {
                 println!("mct: {}", err);
                 break
@@ -93,7 +97,7 @@ fn client_cmd_receiver(stream: UnixStream, cmd_tx: Sender<String>) {
 
 fn client_console_sender(mut stream: UnixStream, console_rx: Receiver<String>) {
     loop {
-        match console_rx.recv_opt() {
+        match console_rx.recv() {
             Ok(output) => {let _ = stream.write_str(output.as_slice());},
             Err(_) => break
         };
@@ -102,7 +106,7 @@ fn client_console_sender(mut stream: UnixStream, console_rx: Receiver<String>) {
 
 fn server_cmd_executor(mut server_stdin: BufferedStream<PipeStream>, cmd_rx: Receiver<String>, mut console_station: BroadcastStation<String>) {
     loop {
-        match cmd_rx.recv_opt() {
+        match cmd_rx.recv() {
             Ok(cmd) => {
                 let msg = format!("mct: executing '{}'\n", cmd.as_slice().trim_right_matches('\n'));
                 print!("{}", msg.as_slice());
@@ -110,7 +114,7 @@ fn server_cmd_executor(mut server_stdin: BufferedStream<PipeStream>, cmd_rx: Rec
                 let _ = server_stdin.write_str(cmd.as_slice());
                 let _ = server_stdin.flush();
             },
-            Err(()) => {
+            Err(_) => {
                 println!("mct: stopping cmd executor");
                 break
             } 
@@ -157,7 +161,7 @@ fn spawn_server(server_path: &Path) -> Result<Process> {
         .map_err(|e| error(format!("{} {}", e, start_script.display().to_string()).as_slice()))
 }
 
-docopt!(Args deriving Show, "
+docopt!(Args, "
 Start a server
 
 Usage:

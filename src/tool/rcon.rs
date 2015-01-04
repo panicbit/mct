@@ -1,7 +1,7 @@
 use docopt;
 use augeas::{Augeas,AugFlags};
 
-#[deriving(Show)]
+#[derive(Show)]
 pub struct RconInfo {
     pub enabled: bool,
     pub port: u16,
