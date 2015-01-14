@@ -33,12 +33,6 @@ impl Error for WrappedError {
     }
 }
 
-impl FromError<WrappedError> for Box<Error> {
-    fn from_error(err: WrappedError) -> Box<Error> {
-        box err
-    }
-}
-
 impl fmt::Show for WrappedError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
