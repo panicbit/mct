@@ -5,9 +5,9 @@ version = "0.0.1"
 authors = ["panicbit <panicbit@users.noreply.github.com>"]
 
 [dependencies.docopt_macros]
-#git = "https://github.com/docopt/docopt.rs"
-git = "https://github.com/alexcrichton/docopt.rs.git"
-branch = "update"
+git = "https://github.com/docopt/docopt.rs"
+#git = "https://github.com/alexcrichton/docopt.rs.git"
+#branch = "update"
 
 [dependencies.augeas]
 git = "https://github.com/panicbit/rust-augeas.git"

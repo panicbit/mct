@@ -3,38 +3,38 @@ name = "mct"
 version = "0.0.1"
 dependencies = [
  "augeas 0.0.1 (git+https://github.com/panicbit/rust-augeas.git)",
- "docopt_macros 0.6.21 (git+https://github.com/alexcrichton/docopt.rs.git?branch=update)",
+ "docopt_macros 0.6.30 (git+https://github.com/docopt/docopt.rs)",
 ]
 
 [[package]]
 name = "augeas"
 version = "0.0.1"
-source = "git+https://github.com/panicbit/rust-augeas.git#620650282d0f669d147e2d6e9c36f9229c5c087a"
+source = "git+https://github.com/panicbit/rust-augeas.git#d0381730cb901c88e4e4ae79c39593c668267332"
 
 [[package]]
 name = "docopt"
-version = "0.6.21"
-source = "git+https://github.com/alexcrichton/docopt.rs.git?branch=update#fc5553b17b5c7befe940ab3375e497d3d5f6731d"
+version = "0.6.30"
+source = "git+https://github.com/docopt/docopt.rs#9801d525967794c0dc7c8ec7fd840d981275040b"
 dependencies = [
- "regex 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustc-serialize 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "docopt_macros"
-version = "0.6.21"
-source = "git+https://github.com/alexcrichton/docopt.rs.git?branch=update#fc5553b17b5c7befe940ab3375e497d3d5f6731d"
+version = "0.6.30"
+source = "git+https://github.com/docopt/docopt.rs#9801d525967794c0dc7c8ec7fd840d981275040b"
 dependencies = [
- "docopt 0.6.21 (git+https://github.com/alexcrichton/docopt.rs.git?branch=update)",
+ "docopt 0.6.30 (git+https://github.com/docopt/docopt.rs)",
 ]
 
 [[package]]
 name = "regex"
-version = "0.1.6"
+version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "rustc-serialize"
-version = "0.2.2"
+version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
