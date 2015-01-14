@@ -25,14 +25,14 @@ pub fn main(args: Vec<String>) {
     let socket_path = &server_path.join("mct.sock");
 
     if let Err(e) = detect_running_server(socket_path) {
-        println!("mct: {}", e);
+        println!("mct: {:?}", e);
         return
     }
 
     let mut acceptor = match UnixListener::bind(socket_path).listen() {
         Ok(acceptor) => acceptor,
         Err(e) => {
-            println!("mct: {}", e);
+            println!("mct: {:?}", e);
             return
         }
     };
@@ -40,7 +40,7 @@ pub fn main(args: Vec<String>) {
     let mc_server = match spawn_server(server_path) {
         Ok(server) => server,
         Err(e) => {
-            println!("mct spawn server: {}", e);
+            println!("mct spawn server: {:?}", e);
             return
         }
     };
@@ -84,11 +84,11 @@ fn client_cmd_receiver(stream: UnixStream, cmd_tx: Sender<String>) {
     loop {
         match stream.read_line() {
             Ok(cmd) => if let Err(err) = cmd_tx.send(cmd) {
-                println!("mct: {}", err);
+                println!("mct: {:?}", err);
                 break
             },
             Err(err) => {
-                println!("mct: {}", err);
+                println!("mct: {:?}", err);
                 break
             }
         }

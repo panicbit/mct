@@ -62,7 +62,7 @@ pub fn main(args: Vec<String>) {
         aug.save();
     }
 
-    println!("{}", args);
+    println!("{:?}", args);
 }
 
 fn cmd_show(rcon: RconInfo) {
