@@ -75,7 +75,7 @@ r"enabled: {}
     rcon.pass)
 }
 
-docopt!(Args deriving Show, "
+docopt!(Args derive Show, "
 Configure rcon settings
 
 Usage:
