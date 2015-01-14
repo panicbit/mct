@@ -55,8 +55,8 @@ pub fn main(args: Vec<String>) {
         let station1 = station.clone();
         let station2 = station.clone();
         let acceptor = acceptor.clone();
-        Thread::spawn(move || server_console_broadcaster(server_stdout, station1, acceptor)).detach();
-        Thread::spawn(move || server_cmd_executor(server_stdin, cmd_rx, station2)).detach();
+        Thread::spawn(move || server_console_broadcaster(server_stdout, station1, acceptor));
+        Thread::spawn(move || server_cmd_executor(server_stdin, cmd_rx, station2));
     }
 
     for mut stream in acceptor.incoming() {
@@ -72,8 +72,8 @@ pub fn main(args: Vec<String>) {
                 let stream1 = stream.clone();
                 let stream2 = stream.clone();
                 let console_rx = station.receiver();
-                Thread::spawn(move || client_cmd_receiver(stream1, cmd_tx)).detach();
-                Thread::spawn(move || client_console_sender(stream2, console_rx)).detach();
+                Thread::spawn(move || client_cmd_receiver(stream1, cmd_tx));
+                Thread::spawn(move || client_console_sender(stream2, console_rx));
             }
         }
     }
