@@ -1,9 +1,8 @@
-#![feature(old_orphan_check)]
-#![feature(globs,phase)]
+#![feature(plugin)]
 extern crate getopts;
 extern crate augeas;
 extern crate libc;
-#[phase(plugin)]
+#[plugin]
 extern crate docopt_macros;
 extern crate docopt;
 extern crate "rustc-serialize" as rustc_serialize;
