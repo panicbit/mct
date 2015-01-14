@@ -59,7 +59,7 @@ pub fn error(msg: &str) -> WrappedError {
 
 
 pub fn wrap_error<E: Error>(e: E) -> WrappedError {
-    Wrapped(box e)
+    Wrapped(Box::new(e))
 }
 
 pub type Result<T> = result::Result<T, WrappedError>;
