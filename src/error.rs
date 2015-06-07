@@ -1,7 +1,7 @@
-use std::error::{Error,FromError};
+use std::error::Error;
 use std::fmt;
 use std::result;
-use std::io::IoError;
+use std::io;
 
 use self::WrappedError::*;
 
@@ -47,8 +47,8 @@ impl fmt::Show for WrappedError {
     }
 }
 
-impl FromError<IoError> for WrappedError {
-    fn from_error(e: IoError) -> WrappedError {
+impl From<io::Error> for WrappedError {
+    fn from(e: io::Error) -> WrappedError {
         wrap_error(e)
     }
 }
