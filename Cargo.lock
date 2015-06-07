@@ -3,38 +3,69 @@ name = "mct"
 version = "0.0.1"
 dependencies = [
  "augeas 0.0.1 (git+https://github.com/panicbit/rust-augeas.git)",
- "docopt_macros 0.6.30 (git+https://github.com/docopt/docopt.rs)",
+ "docopt_macros 0.6.66 (git+https://github.com/docopt/docopt.rs)",
 ]
 
 [[package]]
 name = "augeas"
 version = "0.0.1"
-source = "git+https://github.com/panicbit/rust-augeas.git#d0381730cb901c88e4e4ae79c39593c668267332"
+source = "git+https://github.com/panicbit/rust-augeas.git#04a58ebd94697ea688133de5a00f55e5fb66cf7c"
+dependencies = [
+ "augeas_sys 0.0.1 (git+https://github.com/panicbit/augeas_sys)",
+ "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "augeas_sys"
+version = "0.0.1"
+source = "git+https://github.com/panicbit/augeas_sys#7fe780c7a456aff88d308eef1b3fdaa1cf88b073"
+dependencies = [
+ "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "docopt"
-version = "0.6.30"
-source = "git+https://github.com/docopt/docopt.rs#9801d525967794c0dc7c8ec7fd840d981275040b"
+version = "0.6.66"
+source = "git+https://github.com/docopt/docopt.rs#a258a0987d86197cdb221c409ba6d9bc943f598b"
 dependencies = [
- "regex 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustc-serialize 0.2.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 0.1.33 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "strsim 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "docopt_macros"
-version = "0.6.30"
-source = "git+https://github.com/docopt/docopt.rs#9801d525967794c0dc7c8ec7fd840d981275040b"
+version = "0.6.66"
+source = "git+https://github.com/docopt/docopt.rs#a258a0987d86197cdb221c409ba6d9bc943f598b"
 dependencies = [
- "docopt 0.6.30 (git+https://github.com/docopt/docopt.rs)",
+ "docopt 0.6.66 (git+https://github.com/docopt/docopt.rs)",
 ]
 
 [[package]]
+name = "libc"
+version = "0.1.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "regex"
-version = "0.1.10"
+version = "0.1.33"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "regex-syntax 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "regex-syntax"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "rustc-serialize"
-version = "0.2.7"
+version = "0.3.15"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "strsim"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
