@@ -2,13 +2,12 @@
 // https://github.com/rust-lang/rust/issues/11203 is resolved
 // i.e. until signals work
 
+use std::path::Path;
+use std::io::{Stdin, Stdout, BufStream, BufReader, BufWriter};
 use std::sync::mpsc::{channel,Sender,Receiver};
-use std::io::net::pipe::{UnixListener, UnixStream};
-use std::io::{Listener,Acceptor,BufferedStream};
-use std::io::net::pipe::UnixAcceptor;
-use std::io::fs::{unlink,PathExtensions};
-use std::io::process::{Command,Process};
-use std::io::pipe::PipeStream;
+use unix_socket::{self, UnixListener, UnixStream};
+use std::fs::{remove_file,PathExt};
+use std::process::{Command,Child};
 use std::thread::Thread;
 use docopt;
 use error::{error,Result};
@@ -20,7 +19,7 @@ pub fn main(args: Vec<String>) {
         .argv(args.into_iter())
         .decode()
         .unwrap_or_else(|e| e.exit());
-    let server_root = args.arg_server_root.as_slice();
+    let server_root = &args.arg_server_root;
     let server_path = &Path::new(server_root);
     let socket_path = &server_path.join("mct.sock");
 
@@ -29,8 +28,8 @@ pub fn main(args: Vec<String>) {
         return
     }
 
-    let mut acceptor = match UnixListener::bind(socket_path).listen() {
-        Ok(acceptor) => acceptor,
+    let mut listener = match UnixListener::bind(socket_path) {
+        Ok(listener) => listener,
         Err(e) => {
             println!("mct: {:?}", e);
             return
@@ -45,8 +44,8 @@ pub fn main(args: Vec<String>) {
         }
     };
 
-    let server_stdout = BufferedStream::new(mc_server.stdout.clone().unwrap());
-    let server_stdin = BufferedStream::new(mc_server.stdin.clone().unwrap());
+    let server_stdout = BufReader::new(mc_server.stdout.clone().unwrap());
+    let server_stdin = BufWriter::new(mc_server.stdin.clone().unwrap());
 
     let (cmd_tx, cmd_rx) = channel();
     let mut station = MultiSender::<String>::new();
@@ -54,12 +53,12 @@ pub fn main(args: Vec<String>) {
     {
         let station1 = station.clone();
         let station2 = station.clone();
-        let acceptor = acceptor.clone();
-        Thread::spawn(move || server_console_broadcaster(server_stdout, station1, acceptor));
+        let listener = listener.clone();
+        Thread::spawn(move || server_console_broadcaster(server_stdout, station1, listener));
         Thread::spawn(move || server_cmd_executor(server_stdin, cmd_rx, station2));
     }
 
-    for mut stream in acceptor.incoming() {
+    for mut stream in listener.incoming() {
         match stream {
             Err(_) => {
                 //println!("mct: {}", err)
@@ -80,7 +79,7 @@ pub fn main(args: Vec<String>) {
 }
 
 fn client_cmd_receiver(stream: UnixStream, cmd_tx: Sender<String>) {
-    let mut stream = BufferedStream::new(stream);
+    let mut stream = BufStream::new(stream);
     loop {
         match stream.read_line() {
             Ok(cmd) => if let Err(err) = cmd_tx.send(cmd) {
@@ -104,7 +103,7 @@ fn client_console_sender(mut stream: UnixStream, console_rx: Receiver<String>) {
     }
 }
 
-fn server_cmd_executor(mut server_stdin: BufferedStream<PipeStream>, cmd_rx: Receiver<String>, mut console_station: MultiSender<String>) {
+fn server_cmd_executor(mut server_stdin: BufWriter<Stdout>, cmd_rx: Receiver<String>, mut console_station: MultiSender<String>) {
     loop {
         match cmd_rx.recv() {
             Ok(cmd) => {
@@ -122,7 +121,7 @@ fn server_cmd_executor(mut server_stdin: BufferedStream<PipeStream>, cmd_rx: Rec
     }
 }
 
-fn server_console_broadcaster(mut server_stdout: BufferedStream<PipeStream>, mut station: MultiSender<String>, mut acceptor: UnixAcceptor) {
+fn server_console_broadcaster(mut server_stdout: BufReader<Stdin>, mut station: MultiSender<String>, mut listener: unix_socket::Incoming) {
     loop {
         match server_stdout.read_line() {
             Ok(line) => {
@@ -130,7 +129,7 @@ fn server_console_broadcaster(mut server_stdout: BufferedStream<PipeStream>, mut
                 station.send(line);
             },
             Err(_) => {
-                let _ = acceptor.close_accept();
+                let _ = listener.close_accept();
                 println!("mct: stopping console broadcaster");
                 break
             }
@@ -144,7 +143,7 @@ fn detect_running_server(socket_path: &Path) -> Result<()> {
         if UnixStream::connect(socket_path).is_ok() {
             Err(error("server already running"))
         } else {
-            try!(unlink(socket_path));
+            try!(remove_file(socket_path));
             Ok(())
         }
     } else {
@@ -152,11 +151,14 @@ fn detect_running_server(socket_path: &Path) -> Result<()> {
     }
 }
 
-fn spawn_server(server_path: &Path) -> Result<Process> {
+fn spawn_server(server_path: &Path) -> Result<Child> {
+    use std::process::Stdio;
     let start_script = &server_path.join("StartServer.sh");
 
     Command::new(start_script)
         .cwd(server_path)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
         .spawn()
         .map_err(|e| error(format!("{} {}", e, start_script.display().to_string()).as_slice()))
 }

@@ -5,6 +5,7 @@ use std::io;
 
 use self::WrappedError::*;
 
+#[derive(Debug)]
 pub enum WrappedError {
     Simple(String),
     Wrapped(Box<Error>)
@@ -13,15 +14,8 @@ pub enum WrappedError {
 impl Error for WrappedError {
     fn description(&self) -> &str {
         match *self {
-            Simple(ref msg) => msg.as_slice(),
+            Simple(ref msg) => &msg,
             Wrapped(ref e) => e.description()
-        }
-    }
-
-    fn detail(&self) -> Option<String> {
-        match self {
-            &Simple(_) => None,
-            &Wrapped(ref e) => e.detail()
         }
     }
 
@@ -33,16 +27,11 @@ impl Error for WrappedError {
     }
 }
 
-impl fmt::Debug for WrappedError {
+impl fmt::Display for WrappedError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Simple(ref msg) => write!(f, "{}", msg),
-            Wrapped(ref e) => {
-                match e.detail() {
-                    Some(detail) => write!(f, "{} ({})", e.description(), detail),
-                    None => write!(f, "{}", e.description())
-                }
-            }
+            Wrapped(ref e) => write!(f, "{}", e.description())
         }
     }
 }
@@ -58,7 +47,7 @@ pub fn error(msg: &str) -> WrappedError {
 }
 
 
-pub fn wrap_error<E: Error>(e: E) -> WrappedError {
+pub fn wrap_error<E: Error + 'static>(e: E) -> WrappedError {
     Wrapped(Box::new(e))
 }
 

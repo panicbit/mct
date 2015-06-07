@@ -20,3 +20,6 @@ git = "https://github.com/panicbit/rust-augeas.git"
 
 [dependencies.libc]
 version = "*"
+
+[dependencies.unix_socket]
+version = "*"
