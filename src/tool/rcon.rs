@@ -1,5 +1,5 @@
 use docopt;
-use augeas::{Augeas,AugFlags};
+use augeas::{Augeas,AugFlag};
 
 #[derive(Show)]
 pub struct RconInfo {
