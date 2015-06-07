@@ -1,6 +1,7 @@
 use docopt;
 use augeas::{Augeas,AugFlag};
 use std::ffi::NulError;
+use error;
 
 #[derive(Debug)]
 pub struct RconInfo {
@@ -35,7 +36,7 @@ impl RconInfo {
     }
 }
 
-pub fn main(args: Vec<String>) {
+pub fn main(args: Vec<String>) -> error::Result<()> {
     let args: Args =
         Args::docopt()
         .argv(args.into_iter())
@@ -63,6 +64,8 @@ pub fn main(args: Vec<String>) {
     }
 
     println!("{:?}", args);
+
+    Ok(())
 }
 
 fn cmd_show(rcon: RconInfo) {

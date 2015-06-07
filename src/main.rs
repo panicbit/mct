@@ -24,8 +24,10 @@ fn main() {
     match &*args.arg_command {
         "rcon" => tool::rcon::main(cmd_args),
         "start" => tool::start::main(cmd_args),
-        _ => println!("Unknown command!")
-    };
+        _ => {println!("Unknown command!"); Ok(())}
+    }.unwrap_or_else(|e| {
+        println!("mct: {}", e);
+    })
 }
 
 docopt!(Args, "

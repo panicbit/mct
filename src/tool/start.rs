@@ -13,7 +13,7 @@ use docopt;
 use error::{error,Result};
 use mpmc::MultiSender;
 
-pub fn main(args: Vec<String>) {
+pub fn main(args: Vec<String>) -> Result<()> {
     let args: Args =
         Args::docopt()
         .argv(args.into_iter())
@@ -23,10 +23,13 @@ pub fn main(args: Vec<String>) {
     let server_path = &Path::new(server_root);
     let socket_path = &server_path.join("mct.sock");
 
-    if let Err(e) = detect_running_server(socket_path) {
-        println!("mct: {}", e);
-        return
-    }
+    try!(detect_running_server(socket_path));
+
+    let mut server = try!(spawn_server(server_path));
+
+    server.wait();
+
+    Ok(())
 }
 
 fn detect_running_server(socket_path: &Path) -> Result<()> {
