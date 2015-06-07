@@ -3,7 +3,10 @@ name = "mct"
 version = "0.0.1"
 dependencies = [
  "augeas 0.0.1 (git+https://github.com/panicbit/rust-augeas.git)",
+ "docopt 0.6.66 (git+https://github.com/docopt/docopt.rs)",
  "docopt_macros 0.6.66 (git+https://github.com/docopt/docopt.rs)",
+ "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

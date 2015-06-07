@@ -1,9 +1,8 @@
 #![feature(plugin)]
+#![plugin(docopt_macros)]
 extern crate getopts;
 extern crate augeas;
 extern crate libc;
-#[plugin]
-extern crate docopt_macros;
 extern crate docopt;
 extern crate rustc_serialize;
 
