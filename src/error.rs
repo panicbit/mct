@@ -33,7 +33,7 @@ impl Error for WrappedError {
     }
 }
 
-impl fmt::Show for WrappedError {
+impl fmt::Debug for WrappedError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
             Simple(ref msg) => write!(f, "{}", msg),

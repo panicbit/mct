@@ -1,7 +1,7 @@
 use docopt;
 use augeas::{Augeas,AugFlag};
 
-#[derive(Show)]
+#[derive(Debug)]
 pub struct RconInfo {
     pub enabled: bool,
     pub port: u16,
@@ -75,7 +75,7 @@ r"enabled: {}
     rcon.pass)
 }
 
-docopt!(Args derive Show, "
+docopt!(Args derive Debug, "
 Configure rcon settings
 
 Usage:
