@@ -5,7 +5,7 @@ extern crate libc;
 #[plugin]
 extern crate docopt_macros;
 extern crate docopt;
-extern crate "rustc-serialize" as rustc_serialize;
+extern crate rustc_serialize;
 
 mod error;
 mod tool;
