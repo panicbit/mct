@@ -42,8 +42,8 @@ impl From<io::Error> for WrappedError {
     }
 }
 
-pub fn error(msg: &str) -> WrappedError {
-    Simple(msg.to_string())
+pub fn error<S: Into<String>>(msg: S) -> WrappedError {
+    Simple(msg.into())
 }
 
 
