@@ -6,8 +6,6 @@ pub struct MultiSender<T: Send> {
     clients: Arc<Mutex<Vec<Sender<T>>>>
 }
 
-unsafe impl<T: Send> Sync for MultiSender<T> {}
-
 impl<T: Send+Clone> MultiSender<T> {
     pub fn new() -> MultiSender<T> {
         MultiSender::<T> {
