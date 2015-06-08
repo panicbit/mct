@@ -3,12 +3,12 @@
 // i.e. until signals work
 
 use std::path::Path;
-use std::io::{Stdin, Stdout, BufStream, BufReader, BufWriter};
-use std::sync::mpsc::{channel,Sender,Receiver};
-use unix_socket::{self, UnixListener, UnixStream};
+use std::io::{self, BufRead, BufReader, BufWriter, Write};
+use std::sync::{Arc, Mutex};
+use unix_socket::{UnixListener, UnixStream};
 use std::fs::{self, remove_file};
 use std::process::{Command,Child};
-use std::thread::Thread;
+use std::thread::spawn;
 use docopt;
 use error::{error,Result};
 use mpmc::MultiSender;
@@ -19,15 +19,85 @@ pub fn main(args: Vec<String>) -> Result<()> {
         .argv(args.into_iter())
         .decode()
         .unwrap_or_else(|e| e.exit());
-    let server_root = &args.arg_server_root;
-    let server_path = &Path::new(server_root);
-    let socket_path = &server_path.join("mct.sock");
+
+    let server_root = &Path::new(&args.arg_server_root);
+
+    try!(start(server_root));
+
+    Ok(())
+}
+
+fn start<P: AsRef<Path>>(server_root: P) -> Result<()> {
+    let server_root = server_root.as_ref();
+    let socket_path = &server_root.join("mct.sock");
 
     try!(detect_running_server(socket_path));
 
-    let mut server = try!(spawn_server(server_path));
+    let server = try!(spawn_server(server_root));
+    let socket = try!(UnixListener::bind(socket_path));
 
-    server.wait();
+    // Acquire the server's stdout/stdin
+    let server_out = try!(server.stdout.ok_or(error("Server stdout unavailable")));
+    let server_in = try!(server.stdin.ok_or(error("Server stdin unavailable")));
+
+    // Buffer them
+    let mut server_out = BufReader::new(server_out);
+    let server_in = BufWriter::new(server_in);
+
+    // Make server input shareable
+    let server_in = Arc::new(Mutex::new(server_in));
+
+    let mut stdout_sender = MultiSender::new();
+
+    // Read the stdout of the server and broadcast it
+    let main_thread = {
+        let stdout_sender = stdout_sender.clone();
+        spawn(move || {
+            let mut stdout_sender = stdout_sender.clone();
+            let ref mut line = String::new();
+            while server_out.read_line(line).is_ok() && !line.is_empty() {
+                stdout_sender.send(line.clone());
+                line.clear();
+            }
+            stdout_sender.disconnect_all();
+        })
+    };
+
+    // Accept clients
+    // This thread may not be joined, otherwise the prorgram won't exit
+    // after the server shut down
+    spawn(move || {
+        while let Ok(client) = socket.accept() {
+            let stdout_receiver = stdout_sender.subscribe();
+            let mut client_in = client.try_clone().unwrap();
+            let mut client_out = BufReader::new(client);
+
+            // Sends server stdout to client
+            spawn(move || -> io::Result<()> {
+                for line in stdout_receiver {
+                    try!(client_in.write_all(line.as_bytes()));
+                    try!(client_in.flush());
+                }
+                Ok(())
+            });
+
+            // Sends client stdin to server
+            let server_in = server_in.clone();
+            spawn(move || -> io::Result<()> {
+                let ref mut line = String::new();
+                while client_out.read_line(line).is_ok() && !line.is_empty() {
+                    let mut server_in = server_in.lock().unwrap();
+                    try!(server_in.write_all(line.as_bytes()));
+                    try!(server_in.flush());
+                    line.clear();
+                }
+                Ok(())
+            });
+
+        }
+    });
+
+    main_thread.join().unwrap();
 
     Ok(())
 }
