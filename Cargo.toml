@@ -4,10 +4,22 @@ name = "mct"
 version = "0.0.1"
 authors = ["panicbit <panicbit@users.noreply.github.com>"]
 
+[dependencies.docopt]
+git = "https://github.com/docopt/docopt.rs"
+
 [dependencies.docopt_macros]
 git = "https://github.com/docopt/docopt.rs"
 #git = "https://github.com/alexcrichton/docopt.rs.git"
 #branch = "update"
 
+[dependencies.rustc-serialize]
+version = "*"
+
 [dependencies.augeas]
 git = "https://github.com/panicbit/rust-augeas.git"
+
+[dependencies.libc]
+version = "*"
+
+[dependencies.unix_socket]
+version = "*"

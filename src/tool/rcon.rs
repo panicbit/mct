@@ -1,7 +1,9 @@
 use docopt;
-use augeas::{Augeas,AugFlags};
+use augeas::{Augeas,AugFlag};
+use std::ffi::NulError;
+use error;
 
-#[derive(Show)]
+#[derive(Debug)]
 pub struct RconInfo {
     pub enabled: bool,
     pub port: u16,
@@ -9,48 +11,47 @@ pub struct RconInfo {
 }
 
 impl RconInfo {
-    pub fn from_augeas(aug: &Augeas) -> RconInfo {
-        let rcon_enabled = aug
-            .get("server.properties/enable-rcon")
-            .and_then(|enabled| enabled.parse::<bool>())
+    pub fn from_augeas(aug: &Augeas) -> Result<RconInfo, NulError> {
+        let rcon_enabled = try!(aug.get("server.properties/enable-rcon"))
+            .and_then(|enabled| enabled.parse::<bool>().ok())
             .unwrap_or(false);
-        let rcon_port = aug
-            .get("server.properties/rcon.port")
-            .and_then(|port| port.parse::<u16>())
+        let rcon_port = try!(aug.get("server.properties/rcon.port"))
+            .and_then(|port| port.parse::<u16>().ok())
             .unwrap_or(25575);
-        let rcon_pass = aug.get("server.properties/rcon.password")
+        let rcon_pass = try!(aug.get("server.properties/rcon.password"))
             .unwrap_or("".to_string());
 
-        RconInfo {
+        Ok(RconInfo {
             enabled: rcon_enabled,
             port: rcon_port,
             pass: rcon_pass
-        }
+        })
     }
 
-    pub fn update_augeas(&self, aug: &mut Augeas) {
-        aug.set("server.properties/enable-rcon", self.enabled.to_string().as_slice());
-        aug.set("server.properties/rcon.port", self.port.to_string().as_slice());
-        aug.set("server.properties/rcon.password", self.pass.to_string().as_slice());
+    pub fn update_augeas(&self, aug: &mut Augeas) -> Result<(), NulError> {
+        try!(aug.set("server.properties/enable-rcon", &self.enabled.to_string()));
+        try!(aug.set("server.properties/rcon.port", &self.port.to_string()));
+        try!(aug.set("server.properties/rcon.password", &self.pass.to_string()));
+        Ok(())
     }
 }
 
-pub fn main(args: Vec<String>) {
+pub fn main(args: Vec<String>) -> error::Result<()> {
     let args: Args =
         Args::docopt()
         .argv(args.into_iter())
         .decode()
         .unwrap_or_else(|e| e.exit());
-    let server_root = args.arg_server_root.as_slice();
-    let aug = &mut Augeas::new(server_root, "res/augeas/", AugFlags::None);
-    let mut rcon = RconInfo::from_augeas(aug);
+    let server_root = &args.arg_server_root;
+    let aug = &mut Augeas::new(server_root, "res/augeas/", AugFlag::None).unwrap();
+    let mut rcon = RconInfo::from_augeas(aug).unwrap();
 
     if args.flag_list {
         cmd_show(rcon);
     } else {
         if args.flag_port {
             let new_port = args.arg_port.parse::<u16>();
-            rcon.port = new_port.unwrap_or_else(|| {
+            rcon.port = new_port.unwrap_or_else(|_| {
                 println!("invalid port");
                 rcon.port
             });
@@ -58,11 +59,13 @@ pub fn main(args: Vec<String>) {
 
         // TODO: implement remaining flags
 
-        rcon.update_augeas(aug);
+        rcon.update_augeas(aug).unwrap();
         aug.save();
     }
 
     println!("{:?}", args);
+
+    Ok(())
 }
 
 fn cmd_show(rcon: RconInfo) {
@@ -75,7 +78,7 @@ r"enabled: {}
     rcon.pass)
 }
 
-docopt!(Args derive Show, "
+docopt!(Args derive Debug, "
 Configure rcon settings
 
 Usage:

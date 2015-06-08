@@ -6,8 +6,6 @@ pub struct MultiSender<T: Send> {
     clients: Arc<Mutex<Vec<Sender<T>>>>
 }
 
-unsafe impl<T: Send> Sync for MultiSender<T> {}
-
 impl<T: Send+Clone> MultiSender<T> {
     pub fn new() -> MultiSender<T> {
         MultiSender::<T> {
@@ -15,7 +13,7 @@ impl<T: Send+Clone> MultiSender<T> {
         }
     }
     
-    pub fn receiver(&mut self) -> Receiver<T> {
+    pub fn subscribe(&mut self) -> Receiver<T> {
         let (cast_tx, cast_rx) = channel();
         let mut clients = self.clients.lock().unwrap();
         clients.push(cast_tx);

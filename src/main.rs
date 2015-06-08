@@ -1,11 +1,10 @@
 #![feature(plugin)]
-extern crate getopts;
+#![plugin(docopt_macros)]
 extern crate augeas;
 extern crate libc;
-#[plugin]
-extern crate docopt_macros;
 extern crate docopt;
-extern crate "rustc-serialize" as rustc_serialize;
+extern crate rustc_serialize;
+extern crate unix_socket;
 
 mod error;
 mod tool;
@@ -20,13 +19,15 @@ fn main() {
 
     // Build sub-command commandline
     let mut cmd_args = vec![args.arg_command.clone()];
-    cmd_args.push_all(args.arg_args.as_slice());
+    cmd_args.extend(args.arg_args);
 
-    match args.arg_command.as_slice() {
+    match &*args.arg_command {
         "rcon" => tool::rcon::main(cmd_args),
         "start" => tool::start::main(cmd_args),
-        _ => println!("Unknown command!")
-    };
+        _ => {println!("Unknown command!"); Ok(())}
+    }.unwrap_or_else(|e| {
+        println!("mct: {}", e);
+    })
 }
 
 docopt!(Args, "
