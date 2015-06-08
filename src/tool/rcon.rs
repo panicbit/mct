@@ -59,7 +59,7 @@ pub fn main(args: Vec<String>) -> error::Result<()> {
 
         // TODO: implement remaining flags
 
-        rcon.update_augeas(aug);
+        rcon.update_augeas(aug).unwrap();
         aug.save();
     }
 
