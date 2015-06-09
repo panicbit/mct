@@ -6,7 +6,7 @@ extern crate docopt;
 extern crate rustc_serialize;
 extern crate unix_socket;
 
-mod error;
+mod common;
 mod tool;
 mod mpmc;
 

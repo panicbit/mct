@@ -2,7 +2,7 @@ use docopt;
 use ::augeas;
 use augeas::{Augeas,AugFlag};
 use std::ffi::NulError;
-use error;
+use common;
 
 /// Stores rcon properties
 #[derive(Debug)]
@@ -40,7 +40,7 @@ impl RconInfo {
     }
 }
 
-pub fn main(args: Vec<String>) -> error::Result<()> {
+pub fn main(args: Vec<String>) -> common::Result<()> {
     // Parse arguments
     let args: Args =
         Args::docopt()

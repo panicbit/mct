@@ -10,7 +10,7 @@ use std::fs::{self, remove_file};
 use std::process::{Command,Child};
 use std::thread::spawn;
 use docopt;
-use error::{error,Result};
+use common::{error,Result};
 use mpmc::MultiSender;
 
 pub fn main(args: Vec<String>) -> Result<()> {
