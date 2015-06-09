@@ -11,6 +11,7 @@ mod tool;
 mod mpmc;
 
 fn main() {
+    // Parse arguments
     let args: Args =
         Args::docopt()
         .options_first(true)
@@ -21,6 +22,7 @@ fn main() {
     let mut cmd_args = vec![args.arg_command.clone()];
     cmd_args.extend(args.arg_args);
 
+    // Invoke the chosen sub-command
     match &*args.arg_command {
         "rcon" => tool::rcon::main(cmd_args),
         "start" => tool::start::main(cmd_args),

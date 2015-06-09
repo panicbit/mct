@@ -3,6 +3,7 @@ use augeas::{Augeas,AugFlag};
 use std::ffi::NulError;
 use error;
 
+/// Stores rcon properties
 #[derive(Debug)]
 pub struct RconInfo {
     pub enabled: bool,
@@ -11,6 +12,7 @@ pub struct RconInfo {
 }
 
 impl RconInfo {
+    /// Reads rcon properties using augeas
     pub fn from_augeas(aug: &Augeas) -> Result<RconInfo, NulError> {
         let rcon_enabled = try!(aug.get("server.properties/enable-rcon"))
             .and_then(|enabled| enabled.parse::<bool>().ok())
@@ -28,6 +30,7 @@ impl RconInfo {
         })
     }
 
+    /// Updates rcon properties in augeas BUT does not save them
     pub fn update_augeas(&self, aug: &mut Augeas) -> Result<(), NulError> {
         try!(aug.set("server.properties/enable-rcon", &self.enabled.to_string()));
         try!(aug.set("server.properties/rcon.port", &self.port.to_string()));
@@ -37,18 +40,22 @@ impl RconInfo {
 }
 
 pub fn main(args: Vec<String>) -> error::Result<()> {
+    // Parse arguments
     let args: Args =
         Args::docopt()
         .argv(args.into_iter())
         .decode()
         .unwrap_or_else(|e| e.exit());
     let server_root = &args.arg_server_root;
+
+    // Read rcon properties
     let aug = &mut Augeas::new(server_root, "res/augeas/", AugFlag::None).unwrap();
     let mut rcon = RconInfo::from_augeas(aug).unwrap();
 
     if args.flag_list {
         cmd_show(rcon);
     } else {
+        // Update rcon port
         if args.flag_port {
             let new_port = args.arg_port.parse::<u16>();
             rcon.port = new_port.unwrap_or_else(|_| {
@@ -68,6 +75,7 @@ pub fn main(args: Vec<String>) -> error::Result<()> {
     Ok(())
 }
 
+/// Prints all rcon properties
 fn cmd_show(rcon: RconInfo) {
     println!(
 r"enabled: {}

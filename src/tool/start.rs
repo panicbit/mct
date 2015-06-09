@@ -14,6 +14,7 @@ use error::{error,Result};
 use mpmc::MultiSender;
 
 pub fn main(args: Vec<String>) -> Result<()> {
+    // Parse arguments
     let args: Args =
         Args::docopt()
         .argv(args.into_iter())
@@ -31,8 +32,10 @@ fn start<P: AsRef<Path>>(server_root: P) -> Result<()> {
     let server_root = server_root.as_ref();
     let socket_path = &server_root.join("mct.sock");
 
+    // The server may not already be running
     try!(detect_running_server(socket_path));
 
+    // Create a socket and spawn the server
     let server = try!(spawn_server(server_root));
     let socket = try!(UnixListener::bind(socket_path));
 
@@ -65,7 +68,7 @@ fn start<P: AsRef<Path>>(server_root: P) -> Result<()> {
 
     // Accept clients
     // This thread may not be joined, otherwise the prorgram won't exit
-    // after the server shut down
+    // after the server has shut down
     spawn(move || {
         while let Ok(client) = socket.accept() {
             let stdout_receiver = stdout_sender.subscribe();
