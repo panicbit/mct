@@ -36,8 +36,8 @@ fn start<P: AsRef<Path>>(server_root: P) -> Result<()> {
     try!(detect_running_server(socket_path));
 
     // Create a socket and spawn the server
-    let server = try!(spawn_server(server_root));
     let socket = try!(UnixListener::bind(socket_path));
+    let server = try!(spawn_server(server_root));
 
     // Acquire the server's stdout/stdin
     let server_out = try!(server.stdout.ok_or(error("Server stdout unavailable")));
