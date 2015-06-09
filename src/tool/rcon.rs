@@ -80,8 +80,8 @@ pub fn main(args: Vec<String>) -> common::Result<()> {
 fn cmd_show(rcon: RconInfo) {
     println!(
 r"enabled: {}
-   port: {}
-   pass: '{}'",
+port: {}
+pass: {}",
     rcon.enabled,
     rcon.port,
     rcon.pass)
