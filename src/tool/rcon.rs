@@ -71,8 +71,6 @@ pub fn main(args: Vec<String>) -> common::Result<()> {
         aug.save();
     }
 
-    println!("{:?}", args);
-
     Ok(())
 }
 
