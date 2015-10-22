@@ -3,28 +3,36 @@ name = "mct"
 version = "0.0.1"
 dependencies = [
  "augeas 0.0.1 (git+https://github.com/panicbit/rust-augeas.git)",
- "docopt 0.6.66 (git+https://github.com/docopt/docopt.rs)",
- "docopt_macros 0.6.66 (git+https://github.com/docopt/docopt.rs)",
- "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustc-serialize 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
- "unix_socket 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "docopt 0.6.74 (git+https://github.com/docopt/docopt.rs)",
+ "docopt_macros 0.6.74 (git+https://github.com/docopt/docopt.rs)",
+ "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
+ "unix_socket 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "aho-corasick"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "memchr 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "augeas"
 version = "0.0.1"
-source = "git+https://github.com/panicbit/rust-augeas.git#04a58ebd94697ea688133de5a00f55e5fb66cf7c"
+source = "git+https://github.com/panicbit/rust-augeas.git#cfe3e74aaa0b122900f07cda39ed8fd6a2071280"
 dependencies = [
- "augeas_sys 0.0.1 (git+https://github.com/panicbit/augeas_sys)",
- "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "augeas_sys 0.0.1 (git+https://github.com/panicbit/rust-augeas.git)",
+ "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "augeas_sys"
 version = "0.0.1"
-source = "git+https://github.com/panicbit/augeas_sys#7fe780c7a456aff88d308eef1b3fdaa1cf88b073"
+source = "git+https://github.com/panicbit/rust-augeas.git#cfe3e74aaa0b122900f07cda39ed8fd6a2071280"
 dependencies = [
- "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -34,43 +42,53 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "docopt"
-version = "0.6.66"
-source = "git+https://github.com/docopt/docopt.rs#a258a0987d86197cdb221c409ba6d9bc943f598b"
+version = "0.6.74"
+source = "git+https://github.com/docopt/docopt.rs#2a7d878c66b66e13092449234741e4f9dc03d318"
 dependencies = [
- "regex 0.1.33 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustc-serialize 0.3.15 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex 0.1.41 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "strsim 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "docopt_macros"
-version = "0.6.66"
-source = "git+https://github.com/docopt/docopt.rs#a258a0987d86197cdb221c409ba6d9bc943f598b"
+version = "0.6.74"
+source = "git+https://github.com/docopt/docopt.rs#2a7d878c66b66e13092449234741e4f9dc03d318"
 dependencies = [
- "docopt 0.6.66 (git+https://github.com/docopt/docopt.rs)",
+ "docopt 0.6.74 (git+https://github.com/docopt/docopt.rs)",
 ]
 
 [[package]]
 name = "libc"
-version = "0.1.8"
+version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "regex"
-version = "0.1.33"
+name = "memchr"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "regex-syntax 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "regex"
+version = "0.1.41"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "aho-corasick 0.3.4 (registry+https://github.com/rust-lang/crates.io-index)",
+ "memchr 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "regex-syntax 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
 name = "regex-syntax"
-version = "0.1.2"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "rustc-serialize"
-version = "0.3.15"
+version = "0.3.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -80,10 +98,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "unix_socket"
-version = "0.4.1"
+version = "0.4.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "debug-builders 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc 0.1.8 (registry+https://github.com/rust-lang/crates.io-index)",
+ "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
