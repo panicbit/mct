@@ -1,7 +1,6 @@
 use docopt;
 use ::augeas;
 use augeas::{Augeas,AugFlag};
-use std::ffi::NulError;
 use common;
 
 /// Stores rcon properties
