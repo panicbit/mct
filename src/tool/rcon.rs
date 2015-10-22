@@ -1,4 +1,5 @@
 use docopt;
+use ::augeas;
 use augeas::{Augeas,AugFlag};
 use std::ffi::NulError;
 use error;
@@ -13,7 +14,7 @@ pub struct RconInfo {
 
 impl RconInfo {
     /// Reads rcon properties using augeas
-    pub fn from_augeas(aug: &Augeas) -> Result<RconInfo, NulError> {
+    pub fn from_augeas(aug: &Augeas) -> augeas::Result<RconInfo> {
         let rcon_enabled = try!(aug.get("server.properties/enable-rcon"))
             .and_then(|enabled| enabled.parse::<bool>().ok())
             .unwrap_or(false);
@@ -31,7 +32,7 @@ impl RconInfo {
     }
 
     /// Updates rcon properties in augeas BUT does not save them
-    pub fn update_augeas(&self, aug: &mut Augeas) -> Result<(), NulError> {
+    pub fn update_augeas(&self, aug: &mut Augeas) -> augeas::Result<()> {
         try!(aug.set("server.properties/enable-rcon", &self.enabled.to_string()));
         try!(aug.set("server.properties/rcon.port", &self.port.to_string()));
         try!(aug.set("server.properties/rcon.password", &self.pass.to_string()));
