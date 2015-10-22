@@ -2,6 +2,7 @@ use docopt;
 use ::augeas;
 use augeas::{Augeas,AugFlag};
 use std::ffi::NulError;
+use std::process::exit;
 use common;
 
 /// Stores rcon properties
@@ -53,17 +54,23 @@ pub fn main(args: Vec<String>) -> common::Result<()> {
     let aug = &mut Augeas::new(server_root, "res/augeas/", AugFlag::None).unwrap();
     let mut rcon = RconInfo::from_augeas(aug).unwrap();
 
-    if args.flag_list {
+    // cmd: rcon show
+    if args.cmd_show {
         cmd_show(rcon);
-    } else {
+    }
+
+    // cmd: rcon edit
+    if args.cmd_edit {
         // Update rcon port
-        if args.flag_port {
+        if args.arg_port {
             let new_port = args.arg_port.parse::<u16>();
             rcon.port = new_port.unwrap_or_else(|_| {
                 println!("invalid port");
-                rcon.port
+                exit(0);
             });
         }
+
+
 
         // TODO: implement remaining flags
 
@@ -89,13 +96,14 @@ docopt!(Args derive Debug, "
 Configure rcon settings
 
 Usage:
-    rcon <server-root> [options]
-    rcon <server-root> -p <port>
+    rcon <server-root> enable
+    rcon <server-root> disable
+    rcon <server-root> show
+    rcon <server-root> edit [options]
 
 Options:
     -h, --help           Show this help
-    -l, --list           List settings
     -g, --genpass        Generate a new password
     -p, --port           Set a new port
-    --pass=<pw>          Set a new password
+    --pw=<pw>            Set a new password
 ");

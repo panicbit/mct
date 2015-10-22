@@ -140,4 +140,5 @@ Usage:
 
 Options:
     -h, --help    Show this help
+    -q, --quiet   Don't print server messages
 ");
