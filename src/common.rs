@@ -2,6 +2,7 @@ use std::error::Error;
 use std::fmt;
 use std::result;
 use std::io;
+use ::augeas;
 
 use self::WrappedError::*;
 
@@ -38,6 +39,12 @@ impl fmt::Display for WrappedError {
 
 impl From<io::Error> for WrappedError {
     fn from(e: io::Error) -> WrappedError {
+        wrap_error(e)
+    }
+}
+
+impl From<augeas::Error> for WrappedError {
+    fn from(e: augeas::Error) -> WrappedError {
         wrap_error(e)
     }
 }
