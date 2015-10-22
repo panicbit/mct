@@ -21,7 +21,7 @@ dependencies = [
 [[package]]
 name = "augeas"
 version = "0.0.1"
-source = "git+https://github.com/panicbit/rust-augeas.git#cfe3e74aaa0b122900f07cda39ed8fd6a2071280"
+source = "git+https://github.com/panicbit/rust-augeas.git#2d97990f354e48c7e5a8f7829fd525ef7cb10f62"
 dependencies = [
  "augeas_sys 0.0.1 (git+https://github.com/panicbit/rust-augeas.git)",
  "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -30,7 +30,7 @@ dependencies = [
 [[package]]
 name = "augeas_sys"
 version = "0.0.1"
-source = "git+https://github.com/panicbit/rust-augeas.git#cfe3e74aaa0b122900f07cda39ed8fd6a2071280"
+source = "git+https://github.com/panicbit/rust-augeas.git#2d97990f354e48c7e5a8f7829fd525ef7cb10f62"
 dependencies = [
  "libc 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
